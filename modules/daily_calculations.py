@@ -46,7 +46,7 @@ def ingest_data(excluded_facilities, baseline_year):
     # print(partial_data_values)
 
     # TODO: REMOVE THIS PART FOR QA OLY
-    #dt = dtale.show(daily_estimations_workable)
+    #dt = dtale.show(partial_data_values)
     # opens in browser
     #dt.open_browser()
     # input("Press enter to exit")
@@ -182,6 +182,8 @@ def tabulate_daily_estimations(workable_source):
         partial_data_index[partial_data_index["estimation_for_period"] == ""].index
     )
 
+
+    workable_source = workable_source.dropna(subset=['Input Quantity'])
     # this df is where values and dates will actually get pulled from, mostly to include start and end dates
     partial_data_values = workable_source[
         [
@@ -194,6 +196,8 @@ def tabulate_daily_estimations(workable_source):
             "Input Unit",
         ]
     ].copy()
+
+
     partial_data_values = partial_data_values.drop(
         partial_data_values[partial_data_values["estimation_for_period"] == ""].index
     )
