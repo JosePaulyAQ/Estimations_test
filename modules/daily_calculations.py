@@ -16,7 +16,7 @@ def ingest_data(excluded_facilities, baseline_year):
     print("\n Calculating Daily Estimations...\n")
 
     daily_estimations_raw = daily_estimations.merge(
-        excluded_facilities[["Facility Name", "exclude_from_rates"]],
+        excluded_facilities[["Facility Name", "exclude_from_rates","is_relevant"]],
         on="Facility Name",
         how="left",
     )
