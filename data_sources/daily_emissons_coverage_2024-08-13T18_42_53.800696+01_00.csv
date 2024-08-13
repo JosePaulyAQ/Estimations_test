@@ -1,0 +1,13 @@
+Activity Name,Sub Activity Name,Org / Business Unit Name,Number of Days With Emissions,Month,Financial Year,Facility Name,Type,Emission Start Date,Emission End Date,Input Quantity,Input Unit,Number of Days in Emissions Period,Total days in a month,gas_type,fuel_type,waste_type,waste_treatment_type,waste_category
+Heating Use,Heating Use,United Kingdom,31,1,"2,023",High Holborn Systemiq Share,Office,01/01/2023,31/01/2023,"1,011.69",kWh,31,31,,Gas.Natural Gas,,,
+Heating Use,Heating Use,United Kingdom,28,2,"2,023",High Holborn Systemiq Share,Office,01/02/2023,28/02/2023,913.78,kWh,28,28,,Gas.Natural Gas,,,
+Heating Use,Heating Use,United Kingdom,31,3,"2,023",High Holborn Systemiq Share,Office,01/03/2023,31/03/2023,"1,011.69",kWh,31,31,,Gas.Natural Gas,,,
+Heating Use,Heating Use,United Kingdom,30,4,"2,023",High Holborn Systemiq Share,Office,01/04/2023,30/04/2023,979.06,kWh,30,30,,Gas.Natural Gas,,,
+Heating Use,Heating Use,United Kingdom,31,5,"2,023",High Holborn Systemiq Share,Office,01/05/2023,31/05/2023,"1,011.69",kWh,31,31,,Gas.Natural Gas,,,
+Heating Use,Heating Use,United Kingdom,30,6,"2,023",High Holborn Systemiq Share,Office,01/06/2023,30/06/2023,979.06,kWh,30,30,,Gas.Natural Gas,,,
+Heating Use,Heating Use,United Kingdom,31,7,"2,023",High Holborn Systemiq Share,Office,01/07/2023,31/07/2023,"1,011.69",kWh,31,31,,Gas.Natural Gas,,,
+Heating Use,Heating Use,United Kingdom,31,8,"2,023",High Holborn Systemiq Share,Office,01/08/2023,31/08/2023,"1,011.69",kWh,31,31,,Gas.Natural Gas,,,
+Heating Use,Heating Use,United Kingdom,30,9,"2,023",High Holborn Systemiq Share,Office,01/09/2023,30/09/2023,979.06,kWh,30,30,,Gas.Natural Gas,,,
+Heating Use,Heating Use,United Kingdom,31,10,"2,023",High Holborn Systemiq Share,Office,01/10/2023,31/10/2023,"1,011.69",kWh,31,31,,Gas.Natural Gas,,,
+Heating Use,Heating Use,United Kingdom,30,11,"2,023",High Holborn Systemiq Share,Office,01/11/2023,30/11/2023,979.06,kWh,30,30,,Gas.Natural Gas,,,
+Heating Use,Heating Use,United Kingdom,31,12,"2,023",High Holborn Systemiq Share,Office,01/12/2023,31/12/2023,"1,011.69",kWh,31,31,,Gas.Natural Gas,,,

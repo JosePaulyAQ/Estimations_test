@@ -1,0 +1,13 @@
+Activity,Sub Activity,BU Name,Facility Name,Type,Emission Year,Emission Month,Emission Quantity,Input Quantity,Input Unit,tag,tag_type
+Heating Use,Heating Use,United Kingdom,High Holborn Systemiq Share,Office,"2,023",1,215.63,"1,011.69",kWh,Gas.Natural Gas,fuel_type
+Heating Use,Heating Use,United Kingdom,High Holborn Systemiq Share,Office,"2,023",2,194.76,913.78,kWh,Gas.Natural Gas,fuel_type
+Heating Use,Heating Use,United Kingdom,High Holborn Systemiq Share,Office,"2,023",3,215.63,"1,011.69",kWh,Gas.Natural Gas,fuel_type
+Heating Use,Heating Use,United Kingdom,High Holborn Systemiq Share,Office,"2,023",4,208.68,979.06,kWh,Gas.Natural Gas,fuel_type
+Heating Use,Heating Use,United Kingdom,High Holborn Systemiq Share,Office,"2,023",5,215.63,"1,011.69",kWh,Gas.Natural Gas,fuel_type
+Heating Use,Heating Use,United Kingdom,High Holborn Systemiq Share,Office,"2,023",6,208.68,979.06,kWh,Gas.Natural Gas,fuel_type
+Heating Use,Heating Use,United Kingdom,High Holborn Systemiq Share,Office,"2,023",7,215.63,"1,011.69",kWh,Gas.Natural Gas,fuel_type
+Heating Use,Heating Use,United Kingdom,High Holborn Systemiq Share,Office,"2,023",8,215.63,"1,011.69",kWh,Gas.Natural Gas,fuel_type
+Heating Use,Heating Use,United Kingdom,High Holborn Systemiq Share,Office,"2,023",9,208.68,979.06,kWh,Gas.Natural Gas,fuel_type
+Heating Use,Heating Use,United Kingdom,High Holborn Systemiq Share,Office,"2,023",10,215.63,"1,011.69",kWh,Gas.Natural Gas,fuel_type
+Heating Use,Heating Use,United Kingdom,High Holborn Systemiq Share,Office,"2,023",11,208.68,979.06,kWh,Gas.Natural Gas,fuel_type
+Heating Use,Heating Use,United Kingdom,High Holborn Systemiq Share,Office,"2,023",12,215.63,"1,011.69",kWh,Gas.Natural Gas,fuel_type
