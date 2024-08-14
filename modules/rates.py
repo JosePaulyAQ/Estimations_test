@@ -35,17 +35,17 @@ def ingest_data(excluded_facilities, baseline_year, capacity_and_FTE_outputs):
     )
 
     # print(rates_workable)
-    print(BU_and_type_rates)
-    print(BU_rates)
-    print(type_rates)
-    print(activity_rates)
-    print(facility_rates)
+    #print(BU_and_type_rates)
+    #print(BU_rates)
+    #print(type_rates)
+    #print(activity_rates)
+    #print(facility_rates)
 
     # TODO: REMOVE THIS PART FOR QA OLY
     #dt = dtale.show(BU_and_type_rates)
     # opens in browser
     #dt.open_browser()
-    input("\n Press enter to continue...\n")
+    #input("\n Press enter to continue...\n")
 
     return (
         rates_workable,

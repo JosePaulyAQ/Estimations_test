@@ -8,7 +8,7 @@ def ingest_data(
     selected_facilities, baseline_year, capacity_and_FTE_outputs, rates_outputs
 ):
 
-    print("Calculating Monthly Estimations...\n")
+    print("\n Calculating Monthly Estimations...\n")
 
     # use necesary df from other modules
     # rates_outputs = [rates_workable,BU_and_type_rates,type_rates,BU_rates,activity_rates]
@@ -86,8 +86,8 @@ def ingest_data(
     #dn = dtale.show(first_day_mapping)
     # opens in browser
     #dn.open_browser()
-    print('Done!')
-    input("\n Press enter to continue \n")
+    print('\n Done Calculating! \n')
+    input("\n Press enter to generate Output \n")
 
     return (monthly_estimations_output, end_day_mapping,first_day_mapping)
 
