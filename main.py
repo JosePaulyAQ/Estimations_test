@@ -64,4 +64,5 @@ monthly_outputs = monthly_calculations.ingest_data(
     selected_facilities, baseline_year, capacity_and_FTE_outputs, rates_outputs
 )
 
-outputs.generate_output(monthly_outputs, daily_outputs)
+outputs.generate_output(monthly_outputs, 
+daily_outputs)

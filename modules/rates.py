@@ -24,6 +24,15 @@ def ingest_data(excluded_facilities, baseline_year, capacity_and_FTE_outputs):
         lambda r: get_rate(r, capacity_and_FTE_outputs, FTE_selection), axis="columns"
     )
 
+    #TODO: DELETE, TEST FUNCT
+    rates_workable["CAPACITY_USED"] = rates_workable.apply(
+        lambda r: get_CAPACITY_TEST(r, capacity_and_FTE_outputs, FTE_selection), axis="columns"
+    )
+    #TODO: DELETE, TEST FUNCT
+    rates_workable["CAPACITY_NAME"] = rates_workable.apply(
+        lambda r: get_CAPACITY_NAME_TEST(r, capacity_and_FTE_outputs, FTE_selection), axis="columns"
+    )
+
     # creates dfs for future reference
     facility_rates, BU_and_type_rates, type_rates, BU_rates, activity_rates = (
         tabulate_rates(rates_workable)
@@ -42,9 +51,9 @@ def ingest_data(excluded_facilities, baseline_year, capacity_and_FTE_outputs):
     #print(facility_rates)
 
     # TODO: REMOVE THIS PART FOR QA OLY
-    #dt = dtale.show(BU_and_type_rates)
+    dt = dtale.show(rates_workable)
     # opens in browser
-    #dt.open_browser()
+    dt.open_browser()
     #input("\n Press enter to continue...\n")
 
     return (
@@ -243,9 +252,191 @@ def get_rate(row, capacity_and_FTE_outputs, FTE_selection):
                 return row_input / (avg_df.loc[param_with_year].mean())
 
             # if no year match, use all yrs avg
-            else:
+            elif (avg_df.loc[tupple_param].mean()>0):
                 return row_input / (avg_df.loc[tupple_param].mean())
+            
 
+
+#TODO: TEST FUNCT,DELETE
+
+# calcualtes rates for each row, following hiereachy order for avialable FTE or capacity
+def get_CAPACITY_TEST(row, capacity_and_FTE_outputs, FTE_selection):
+
+    # [FTE_name_avg, FTE_BU_type_avg, FTE_type_avg, FTE_BU_avg]
+    FTE_averages = [
+        capacity_and_FTE_outputs[1],
+        capacity_and_FTE_outputs[3],
+        capacity_and_FTE_outputs[5],
+        capacity_and_FTE_outputs[7],
+    ]
+
+    # [capacity_name_avg, capacity_BU_type_avg, capacity_type_avg, capacity_BU_avg]
+    capacity_averages = [
+        capacity_and_FTE_outputs[0],
+        capacity_and_FTE_outputs[2],
+        capacity_and_FTE_outputs[4],
+        capacity_and_FTE_outputs[6],
+    ]
+
+    row_input = row["Input Quantity"]
+    row_year = row["Emission Year"]
+
+    row_facility = [row["Facility Name"]]
+    row_BU_and_type = [row["BU Name"], row["Type"]]
+    row_type = [row["Type"]]
+    row_BU = [row["BU Name"]]
+
+    row_name_index = (row["Facility Name"], row["Emission Year"], row["Emission Month"])
+
+    row_BU_and_type_index = (
+        row["BU Name"],
+        row["Type"],
+        row["Emission Year"],
+        row["Emission Month"],
+    )
+    row_type_index = (row["Type"], row["Emission Year"], row["Emission Month"])
+
+    row_BU_index = (row["BU Name"], row["Emission Year"], row["Emission Month"])
+
+    # data grouped together to be referenced in for loop
+    list_of_indexes = [
+        row_name_index,
+        row_BU_and_type_index,
+        row_type_index,
+        row_BU_index,
+    ]
+
+    list_of_params = [row_facility, row_BU_and_type, row_type, row_BU]
+
+    # reads from customer FTE selection excel
+    type_list = FTE_selection["facility_type"].unique()
+    activity_list = FTE_selection["activity"].unique()
+
+    # hierarchy for choosing FTE and Capacity is the same as for choosing a rate, as show in documentation
+    # first, checks if facility should use FTE or capacity
+    if row["Sub Activity"] in activity_list and row_type in type_list:
+        FTE_or_capacity_avgs = FTE_averages
+    else:
+        FTE_or_capacity_avgs = capacity_averages
+
+    # runs through each parametre, in hierarchy order, to find mos suitable FTE or capacity
+    for param, index, avg_df in zip(
+        list_of_params, list_of_indexes, FTE_or_capacity_avgs
+    ):
+
+        param_with_year = tuple(param + [row_year])
+        tupple_param = tuple(param)
+
+        # checks if current parametre has a match in its corresponding FTE or Rates table
+        if tupple_param in avg_df.index:
+
+            # row month and year found in FTE df?
+            if index in avg_df.index and avg_df[index] > 0:
+                return avg_df[index]
+
+            # if no month match, check if there is yearly avg
+
+            elif (
+                param_with_year in avg_df.index
+                and avg_df.loc[param_with_year].mean() > 0
+            ):
+                return (avg_df.loc[param_with_year].mean())
+
+                        # if no year match, use all yrs avg
+            elif (avg_df.loc[tupple_param].mean()>0):
+                return (avg_df.loc[tupple_param].mean())
+
+
+
+#TODO: TEST FUNCT,DELETE
+
+# calcualtes rates for each row, following hiereachy order for avialable FTE or capacity
+def get_CAPACITY_NAME_TEST(row, capacity_and_FTE_outputs, FTE_selection):
+
+    # [FTE_name_avg, FTE_BU_type_avg, FTE_type_avg, FTE_BU_avg]
+    FTE_averages = [
+        capacity_and_FTE_outputs[1],
+        capacity_and_FTE_outputs[3],
+        capacity_and_FTE_outputs[5],
+        capacity_and_FTE_outputs[7],
+    ]
+
+    # [capacity_name_avg, capacity_BU_type_avg, capacity_type_avg, capacity_BU_avg]
+    capacity_averages = [
+        capacity_and_FTE_outputs[0],
+        capacity_and_FTE_outputs[2],
+        capacity_and_FTE_outputs[4],
+        capacity_and_FTE_outputs[6],
+    ]
+
+    row_input = row["Input Quantity"]
+    row_year = row["Emission Year"]
+
+    row_facility = [row["Facility Name"]]
+    row_BU_and_type = [row["BU Name"], row["Type"]]
+    row_type = [row["Type"]]
+    row_BU = [row["BU Name"]]
+
+    row_name_index = (row["Facility Name"], row["Emission Year"], row["Emission Month"])
+
+    row_BU_and_type_index = (
+        row["BU Name"],
+        row["Type"],
+        row["Emission Year"],
+        row["Emission Month"],
+    )
+    row_type_index = (row["Type"], row["Emission Year"], row["Emission Month"])
+
+    row_BU_index = (row["BU Name"], row["Emission Year"], row["Emission Month"])
+
+    # data grouped together to be referenced in for loop
+    list_of_indexes = [
+        row_name_index,
+        row_BU_and_type_index,
+        row_type_index,
+        row_BU_index,
+    ]
+
+    list_of_params = [row_facility, row_BU_and_type, row_type, row_BU]
+
+    # reads from customer FTE selection excel
+    type_list = FTE_selection["facility_type"].unique()
+    activity_list = FTE_selection["activity"].unique()
+
+    # hierarchy for choosing FTE and Capacity is the same as for choosing a rate, as show in documentation
+    # first, checks if facility should use FTE or capacity
+    if row["Sub Activity"] in activity_list and row_type in type_list:
+        FTE_or_capacity_avgs = FTE_averages
+    else:
+        FTE_or_capacity_avgs = capacity_averages
+
+    # runs through each parametre, in hierarchy order, to find mos suitable FTE or capacity
+    for param, index, avg_df in zip(
+        list_of_params, list_of_indexes, FTE_or_capacity_avgs
+    ):
+
+        param_with_year = tuple(param + [row_year])
+        tupple_param = tuple(param)
+
+        # checks if current parametre has a match in its corresponding FTE or Rates table
+        if tupple_param in avg_df.index:
+
+            # row month and year found in FTE df?
+            if index in avg_df.index and avg_df[index] > 0:
+                return str(index)
+
+            # if no month match, check if there is yearly avg
+
+            elif (
+                param_with_year in avg_df.index
+                and avg_df.loc[param_with_year].mean() > 0
+            ):
+                return str(param_with_year)
+
+            # if no year match, use all yrs avg
+            # if no year match, use all yrs avg
+            elif (avg_df.loc[tupple_param].mean()>0):
+                return str(tupple_param)
 
 # tags whether to use FTE or capacity for a facility
 def get_rate_type(row, FTE_selection):

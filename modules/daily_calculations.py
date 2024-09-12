@@ -2,7 +2,7 @@ from sources import *
 from datetime import datetime
 import datetime
 import general_functions
-
+import calendar
 
 # joins facility relevance to monthly estiamtions creates workable for daily estimations based on selected fafcilites
 def ingest_data(excluded_facilities, baseline_year):
@@ -11,6 +11,8 @@ def ingest_data(excluded_facilities, baseline_year):
     daily_estimations.dropna(how='all', inplace=True)
     if len(daily_estimations.index) <= 1:
         empty_df = pd.DataFrame()
+
+        print("\n No partial data found, skipping Daily Estimations...\n")
         return [empty_df,empty_df]
 
     print("\n Calculating Daily Estimations...\n")
@@ -46,10 +48,10 @@ def ingest_data(excluded_facilities, baseline_year):
     # print(partial_data_values)
 
     # TODO: REMOVE THIS PART FOR QA OLY
-    #dt = dtale.show(partial_data_values)
+    #dt = dtale.show(daily_estimations_workable)
     # opens in browser
     #dt.open_browser()
-    # input("Press enter to exit")
+    #xinput("Press enter to exit")
 
     return (partial_data_index, partial_data_values)
 
@@ -85,33 +87,39 @@ def is_partial(row):
 # make it so they can grab partial data from any range in the month, not just if emissions starts on the first day and end in the last
 # gets the dates and number of days that need estimation
 def get_estimation_start_date(row):
+    if row["is_partial"]:
+        try:
+            # Extracts string from date
+            date = general_functions.try_parsing_date(str(row["Emission Start Date"]))
+            start_date_day = date.day
+            start_date_month = date.month
+            start_date_year = date.year
 
-    if row["is_partial"] == True:
+            row_year = row["Financial Year"]
+            try:
+                row_month = row["Emission Month"]
+            except:
+                row_month = row["Month"]
+                
+            days_in_month = calendar.monthrange(row_year, row_month)[1]
+
+            # Adds to start day so the emissions begin the day after the first
+            if row['Emission Start Date'] == row['Emission End Date'] or row['Emission Start Date'] == days_in_month:
+                start_date_day=start_date_day
+            else:
+                start_date_day += 1
+
+            # Validate the new date
 
 
-        # extracts string from date
-        date = general_functions.try_parsing_date(str(row["Emission Start Date"]))
-        start_date_day = date.day
-        start_date_month = date.month
-        start_date_year = date.year
+            emission_start_date = datetime.datetime(start_date_year, start_date_month, start_date_day)
+            emission_start_date_str = emission_start_date.strftime('%Y-%m-%d')
+            return emission_start_date_str
 
-        # adds to start day so the emissions begin the day after the first
-        start_date_day += 1
+        except ValueError as e:
+            print(f"Invalid date found: {row['Emission Start Date']} - {e}")
+            return ""
 
-        emission_start_date = (
-            str(start_date_day)
-            + "/"
-            + str(start_date_month)
-            + "/"
-            + str(start_date_year)
-        )
-
-        emission_start_date = datetime.datetime.strptime(emission_start_date, '%d/%m/%Y').strftime('%Y-%m-%d')
-        return emission_start_date
-
-    # if not using row for estimations, skip
-    else:
-        return ""
 
 
 # gets end date for estimations

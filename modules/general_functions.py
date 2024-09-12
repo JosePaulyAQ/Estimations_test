@@ -97,7 +97,11 @@ def is_valid(row):
 from datetime import datetime
 
 def try_parsing_date(text):
-    text = text.strip().title()  # Ensure the text is in title case and remove extra spaces
+
+   # text = text.strip().title()  # Ensure the text is in title case and remove extra spaces
+    if not text:
+        print("Empty date string found")
+        raise ValueError("Empty date string found")
     for fmt in (
         "%Y-%m-%d",
         "%y-%m-%d",
@@ -125,6 +129,7 @@ def try_parsing_date(text):
             return datetime.strptime(text, fmt)
         except ValueError:
             pass
+    print(f"Invalid date format found: {text}")
     raise ValueError(
-        "no valid date format found:  "+ text +"  Please check ..\modules\general_functions.try_parsing_date , and add your desired format"
+        "no valid date format found: " + text + " Please check ..\modules\general_functions.try_parsing_date , and add your desired format"
     )

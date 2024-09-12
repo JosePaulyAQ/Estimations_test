@@ -59,6 +59,17 @@ def ingest_data(
         lambda r: get_rate_map_TEST(r, rates_outputs), axis="columns"
     )
 
+        # TODO: REMOVE; FOR QA ONLY
+    monthly_estimations_workable["capacity/FTE used"] = monthly_estimations_workable.apply(
+        lambda r: get_CAP_map_TEST(r, capacity_and_FTE_outputs), axis="columns"
+    )
+
+
+            # TODO: REMOVE; FOR QA ONLY
+    monthly_estimations_workable["capacity/FTE TYPE USED"] = monthly_estimations_workable.apply(
+        lambda r: get_CAP_TYPE_TEST(r, capacity_and_FTE_outputs), axis="columns"
+    )
+
     monthly_estimations_output = monthly_estimations_workable.copy()
     monthly_estimations_output = (
         monthly_estimations_output.groupby(
@@ -83,9 +94,9 @@ def ingest_data(
 
     # TODO: REMOVE THIS PART FOR QA OLY
 
-    #dn = dtale.show(first_day_mapping)
+    dn = dtale.show(monthly_estimations_workable)
     # opens in browser
-    #dn.open_browser()
+    dn.open_browser()
     print('\n Done Calculating! \n')
     input("\n Press enter to generate Output \n")
 
@@ -199,6 +210,211 @@ def get_first_day(row):
         return end_date_day
     else:
         return 1
+
+# TODO: TEST FUNCTION, REMOVE
+def get_CAP_TYPE_TEST(row, capacity_and_FTE_outputs):
+
+    # [FTE_name_avg, FTE_BU_type_avg, FTE_type_avg, FTE_BU_avg]
+    FTE_averages = [
+        capacity_and_FTE_outputs[1],
+        capacity_and_FTE_outputs[3],
+        capacity_and_FTE_outputs[5],
+        capacity_and_FTE_outputs[7],
+    ]
+
+    # [capacity_name_avg, capacity_BU_type_avg, capacity_type_avg, capacity_BU_avg]
+    capacity_averages = [
+        capacity_and_FTE_outputs[0],
+        capacity_and_FTE_outputs[2],
+        capacity_and_FTE_outputs[4],
+        capacity_and_FTE_outputs[6],
+    ]
+
+    row_year = row["Emission Year"]
+    row_month = row["Emission Month"]
+    row_rate = row["rate"]
+
+    row_facility = [row["Facility Name"]]
+    row_BU_and_type = [row["BU Name"], row["Type"]]
+    row_type = [row["Type"]]
+    row_BU = [row["BU Name"]]
+
+
+
+    # indexing used in for loops, ORDER IS IMPORTANT
+    # the index of each element in list_of_indexes must match list_of Parametres
+    # EG: row_name_index should be [0] in list_of_indexes
+    # and row_facility [0] in list_of_params
+    row_name_index = (row["Facility Name"], row["Emission Year"], row["Emission Month"])
+
+    row_BU_and_type_index = (
+        row["BU Name"],
+        row["Type"],
+        row["Emission Year"],
+        row["Emission Month"],
+    )
+    row_type_index = (row["Type"], row["Emission Year"], row["Emission Month"])
+
+    row_BU_index = (row["BU Name"], row["Emission Year"], row["Emission Month"])
+
+    list_of_indexes = [
+        row_name_index,
+        row_BU_and_type_index,
+        row_type_index,
+        row_BU_index,
+    ]
+
+    list_of_params = [row_facility, row_BU_and_type, row_type, row_BU]
+
+    # determines wether to use FTE or capacity avgs tables
+    if row["consumption_rate_type"] == "FTE":
+        FTE_or_capacity_avgs = FTE_averages
+    else:
+        FTE_or_capacity_avgs = capacity_averages
+
+    for param, index, avg_df in zip(
+        list_of_params, list_of_indexes, FTE_or_capacity_avgs
+    ):
+        param_with_year = tuple(param + [row_year])
+        param_previous_year = tuple(param + [row_year - 1])
+        tupple_param = tuple(param)
+
+        # checks if current parametre has a match in its corresponding FTE or Rates table
+        if tupple_param in avg_df.index:
+
+            # if yes, check if there is month matching data
+            if index in avg_df.index and avg_df[index] > 0:
+
+                selected_average = avg_df[index]
+                return str(index)
+
+            # if not, checks if matching year
+            elif (
+                param_with_year in avg_df.index
+                and avg_df.loc[param_with_year].mean() > 0
+            ):
+
+                selected_average = avg_df.loc[param_with_year].mean()
+                return str(param_with_year)
+            
+            # if not, checks if previous year
+            elif (
+                param_previous_year in avg_df.index
+                and avg_df.loc[param_previous_year].mean() > 0
+            ):
+
+                selected_average = avg_df.loc[param_previous_year].mean()
+                return str(param_previous_year) 
+
+            # if not, uses all years average
+            elif (avg_df.loc[tupple_param].mean() >0 ):
+                selected_average = avg_df.loc[tupple_param].mean()
+                return (str(tupple_param) +' MEAN')
+            
+
+
+
+# TODO: TEST FUNCTION, REMOVE
+def get_CAP_map_TEST(row, capacity_and_FTE_outputs):
+
+    # [FTE_name_avg, FTE_BU_type_avg, FTE_type_avg, FTE_BU_avg]
+    FTE_averages = [
+        capacity_and_FTE_outputs[1],
+        capacity_and_FTE_outputs[3],
+        capacity_and_FTE_outputs[5],
+        capacity_and_FTE_outputs[7],
+    ]
+
+    # [capacity_name_avg, capacity_BU_type_avg, capacity_type_avg, capacity_BU_avg]
+    capacity_averages = [
+        capacity_and_FTE_outputs[0],
+        capacity_and_FTE_outputs[2],
+        capacity_and_FTE_outputs[4],
+        capacity_and_FTE_outputs[6],
+    ]
+
+    row_year = row["Emission Year"]
+    row_month = row["Emission Month"]
+    row_rate = row["rate"]
+
+    row_facility = [row["Facility Name"]]
+    row_BU_and_type = [row["BU Name"], row["Type"]]
+    row_type = [row["Type"]]
+    row_BU = [row["BU Name"]]
+
+
+
+    # indexing used in for loops, ORDER IS IMPORTANT
+    # the index of each element in list_of_indexes must match list_of Parametres
+    # EG: row_name_index should be [0] in list_of_indexes
+    # and row_facility [0] in list_of_params
+    row_name_index = (row["Facility Name"], row["Emission Year"], row["Emission Month"])
+
+    row_BU_and_type_index = (
+        row["BU Name"],
+        row["Type"],
+        row["Emission Year"],
+        row["Emission Month"],
+    )
+    row_type_index = (row["Type"], row["Emission Year"], row["Emission Month"])
+
+    row_BU_index = (row["BU Name"], row["Emission Year"], row["Emission Month"])
+
+    list_of_indexes = [
+        row_name_index,
+        row_BU_and_type_index,
+        row_type_index,
+        row_BU_index,
+    ]
+
+    list_of_params = [row_facility, row_BU_and_type, row_type, row_BU]
+
+    # determines wether to use FTE or capacity avgs tables
+    if row["consumption_rate_type"] == "FTE":
+        FTE_or_capacity_avgs = FTE_averages
+    else:
+        FTE_or_capacity_avgs = capacity_averages
+
+    for param, index, avg_df in zip(
+        list_of_params, list_of_indexes, FTE_or_capacity_avgs
+    ):
+        param_with_year = tuple(param + [row_year])
+        param_previous_year = tuple(param + [row_year - 1])
+        tupple_param = tuple(param)
+
+        # checks if current parametre has a match in its corresponding FTE or Rates table
+        if tupple_param in avg_df.index:
+
+            # if yes, check if there is month matching data
+            if index in avg_df.index and avg_df[index] > 0:
+
+                selected_average = avg_df[index]
+                return selected_average
+
+            # if not, checks if matching year
+            elif (
+                param_with_year in avg_df.index
+                and avg_df.loc[param_with_year].mean() > 0
+            ):
+
+                selected_average = avg_df.loc[param_with_year].mean()
+                return selected_average 
+
+            # if not, checks if previous year
+            elif (
+                param_previous_year in avg_df.index
+                and avg_df.loc[param_previous_year].mean() > 0
+            ):
+
+                selected_average = avg_df.loc[param_previous_year].mean()
+                return selected_average 
+
+            # if not, uses all years average
+            elif (avg_df.loc[tupple_param].mean() >0 ):
+                selected_average = avg_df.loc[tupple_param].mean()
+                return selected_average
+            
+
 
 
 # TODO: TEST FUNCTION, REMOVE
@@ -362,12 +578,18 @@ def get_rate(row, rates_outputs):
                 return rate[tupple_param].mean()
 
 
-def get_operation_percentage(row_close_date, row_year, row_month):
+def get_operation_percentage(row_close_date,row_open_date, row_year, row_month):
 
-    date = general_functions.try_parsing_date(row_close_date)
-    end_date_day = date.day
-    end_date_month = date.month
-    end_date_year = date.year
+    end_date = general_functions.try_parsing_date(row_close_date)
+    end_date_day = end_date.day
+    end_date_month = end_date.month
+    end_date_year = end_date.year
+
+
+    start_date = general_functions.try_parsing_date(row_open_date)
+    start_date_day = start_date.day
+    start_date_month = start_date.month
+    start_date_year = start_date.year
 
     # holds how many days should be in a given month
     days_in_month = calendar.monthrange(row_year, row_month)[1]
@@ -379,8 +601,18 @@ def get_operation_percentage(row_close_date, row_year, row_month):
             return end_date_day / days_in_month
         else:
             return 1
+        
+    elif start_date_year == row_year and start_date_month == row_month:
+        # checks if there are as many days in reporting period as in the month
+        if 1 < start_date_day:
+
+            return ((days_in_month-start_date_day+1) / days_in_month)
+        else:
+            return 1
     else:
         return 1
+    
+    
 
 
 # multiplies the previously chosen rate by the most relevant FTE or capacity found
@@ -413,7 +645,7 @@ def get_estimation(row, capacity_and_FTE_outputs):
 
     # determines % of days of the month that the facility was open
     monthly_operation_percentage = get_operation_percentage(
-        row["Closed/End of Emissions Date"], row_year, row_month
+        row["Closed/End of Emissions Date"],row["Opening Date"], row_year, row_month
     )
 
     # indexing used in for loops, ORDER IS IMPORTANT
@@ -482,6 +714,6 @@ def get_estimation(row, capacity_and_FTE_outputs):
                 return selected_average * row_rate * monthly_operation_percentage
 
             # if not, uses all years average
-            else:
+            elif (avg_df.loc[tupple_param].mean() >0 ):
                 selected_average = avg_df.loc[tupple_param].mean()
                 return selected_average * row_rate * monthly_operation_percentage
