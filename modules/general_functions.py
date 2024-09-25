@@ -49,10 +49,7 @@ def sanitize_data_general(raw_source, baseline_year):
             )
             if column == "FTE" or column == "Capacity (m2)":
                 raw_source = raw_source.dropna(subset=["FTE", "Capacity (m2)"])
-                raw_source["Capacity (m2)"] = raw_source["Capacity (m2)"].replace(
-                    0, np.nan
-                )
-                raw_source["FTE"] = raw_source["FTE"].replace(0, np.nan)
+                raw_source = raw_source.drop(raw_source[(raw_source["FTE"] == 0) & (raw_source["Capacity (m2)"] == 0)].index)
 
     for year in year_list:
         if year in raw_source.columns:

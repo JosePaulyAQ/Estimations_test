@@ -28,9 +28,8 @@ def ingest_data(excluded_facilities, baseline_year):
     ) = tabulate_cap_and_FTE(capacity_and_FTE_workable)
 
 
-    #print( capacity_name_avg)
-    #print( capacity_type_avg)
-    # TODO: REMOVE THIS PART FOR QA OLY
+
+    # TODO: REMOVE THIS PART, FOR QA OLY
     #dt = dtale.show(capacity_and_FTE_workable)
     # opens in browser
     #dt.open_browser()
@@ -55,13 +54,19 @@ def tabulate_cap_and_FTE(workable_source):
     capacity_name_avg = workable_source[
         ["Year", "Month", "Capacity (m2)", "Facility Name"]
     ].copy()
+    capacity_name_avg=capacity_name_avg.drop(capacity_name_avg[capacity_name_avg["Capacity (m2)"] == 0].index)
     capacity_name_avg = capacity_name_avg.groupby(["Facility Name", "Year", "Month"])[
         "Capacity (m2)"
     ].mean()
 
+
+
     FTE_name_avg = workable_source[
         ["Year", "Month", "FTE", "Facility Name"]
     ].copy()
+
+    FTE_name_avg=FTE_name_avg.drop(FTE_name_avg[FTE_name_avg["FTE"] == 0].index)
+    
     FTE_name_avg = FTE_name_avg.groupby(
         ["Facility Name", "Year", "Month"]
     )["FTE"].mean()
@@ -70,6 +75,9 @@ def tabulate_cap_and_FTE(workable_source):
     capacity_BU_type_avg = workable_source[
         ["Year", "Month", "Capacity (m2)", "Type", "BU Name"]
     ].copy()
+
+    capacity_BU_type_avg=capacity_BU_type_avg.drop(capacity_BU_type_avg[capacity_BU_type_avg["Capacity (m2)"] == 0].index)
+
     capacity_BU_type_avg = capacity_BU_type_avg.groupby(
         ["BU Name", "Type", "Year", "Month"]
     )["Capacity (m2)"].mean()
@@ -77,6 +85,9 @@ def tabulate_cap_and_FTE(workable_source):
     FTE_BU_type_avg = workable_source[
         ["Year", "Month", "FTE", "Type", "BU Name"]
     ].copy()
+
+    FTE_BU_type_avg=FTE_BU_type_avg.drop(FTE_BU_type_avg[FTE_BU_type_avg["FTE"] == 0].index)
+
     FTE_BU_type_avg = FTE_BU_type_avg.groupby(["BU Name", "Type", "Year", "Month"])[
         "FTE"
     ].mean()
@@ -85,22 +96,34 @@ def tabulate_cap_and_FTE(workable_source):
     capacity_type_avg = workable_source[
         ["Year", "Month", "Capacity (m2)", "Type"]
     ].copy()
+
+    capacity_type_avg=capacity_type_avg.drop(capacity_type_avg[capacity_type_avg["Capacity (m2)"] == 0].index)
+    
     capacity_type_avg = capacity_type_avg.groupby(["Type", "Year", "Month"])[
         "Capacity (m2)"
     ].mean()
 
     FTE_type_avg = workable_source[["Year", "Month", "FTE", "Type"]].copy()
+
+    FTE_type_avg=FTE_type_avg.drop(FTE_type_avg[FTE_type_avg["FTE"] == 0].index)
+
     FTE_type_avg = FTE_type_avg.groupby(["Type", "Year", "Month"])["FTE"].mean()
 
     # BU
     capacity_BU_avg = workable_source[
         ["Year", "Month", "Capacity (m2)", "BU Name"]
     ].copy()
+
+    capacity_BU_avg=capacity_BU_avg.drop(capacity_BU_avg[capacity_BU_avg["Capacity (m2)"] == 0].index)
+
     capacity_BU_avg = capacity_BU_avg.groupby(["BU Name", "Year", "Month"])[
         "Capacity (m2)"
     ].mean()
 
     FTE_BU_avg = workable_source[["Year", "Month", "FTE", "BU Name"]].copy()
+
+    FTE_BU_avg=FTE_BU_avg.drop(FTE_BU_avg[FTE_BU_avg["FTE"] == 0].index)
+
     FTE_BU_avg = FTE_BU_avg.groupby(["BU Name", "Year", "Month"])["FTE"].mean()
 
     return [

@@ -101,13 +101,13 @@ def tabulate_output(monthly_import, partial_index_imported, partial_values_impor
             axis="columns",
         )
 
-        # gets units for each row
-        #untagged_output['unit']=untagged_output.apply(lambda r: get_units(r,monthly_source), axis='columns')
-
         untagged_output = concat_remainging_partials(
             untagged_output, partial_values_imported
         )
 
+        #removes entries with no partial data
+
+        untagged_output=untagged_output.dropna(subset=['estimation_for_period'])
 
     untagged_output["estimation_for_period"] = round(untagged_output["estimation_for_period"],2)
     tagged_output = tag_and_reindex(untagged_output)

@@ -51,7 +51,7 @@ def ingest_data(excluded_facilities, baseline_year):
     #dt = dtale.show(daily_estimations_workable)
     # opens in browser
     #dt.open_browser()
-    #xinput("Press enter to exit")
+    #input("Press enter to exit")
 
     return (partial_data_index, partial_data_values)
 
@@ -177,6 +177,9 @@ def get_input_estimations(row):
 # tabulates daily estimations to be used in other modules
 def tabulate_daily_estimations(workable_source):
 
+        # Ensure 'estimation_for_period' is numeric
+    workable_source["estimation_for_period"] = pd.to_numeric(workable_source["estimation_for_period"], errors='coerce')
+
     # this one will be used to check if partial data exists for the period
     partial_data_index = workable_source[
         ["Facility Name", "Month", "Financial Year", "estimation_for_period"]
@@ -210,3 +213,6 @@ def tabulate_daily_estimations(workable_source):
         partial_data_values[partial_data_values["estimation_for_period"] == ""].index
     )
     return (partial_data_index, partial_data_values)
+
+
+

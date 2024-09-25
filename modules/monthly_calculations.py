@@ -5,7 +5,7 @@ import general_functions
 
 
 def ingest_data(
-    selected_facilities, baseline_year, capacity_and_FTE_outputs, rates_outputs
+    selected_facilities, baseline_year, capacity_and_FTE_outputs, rates_outputs,custom_rate_selected
 ):
 
     print("\n Calculating Monthly Estimations...\n")
@@ -56,7 +56,7 @@ def ingest_data(
 
     # TODO: REMOVE; FOR QA ONLY
     monthly_estimations_workable["rate used"] = monthly_estimations_workable.apply(
-        lambda r: get_rate_map_TEST(r, rates_outputs), axis="columns"
+        lambda r: get_rate_map_TEST(r, rates_outputs,custom_rate_selected), axis="columns"
     )
 
         # TODO: REMOVE; FOR QA ONLY
@@ -231,8 +231,7 @@ def get_CAP_TYPE_TEST(row, capacity_and_FTE_outputs):
     ]
 
     row_year = row["Emission Year"]
-    row_month = row["Emission Month"]
-    row_rate = row["rate"]
+
 
     row_facility = [row["Facility Name"]]
     row_BU_and_type = [row["BU Name"], row["Type"]]
@@ -271,6 +270,7 @@ def get_CAP_TYPE_TEST(row, capacity_and_FTE_outputs):
         FTE_or_capacity_avgs = FTE_averages
     else:
         FTE_or_capacity_avgs = capacity_averages
+        
 
     for param, index, avg_df in zip(
         list_of_params, list_of_indexes, FTE_or_capacity_avgs
@@ -285,7 +285,6 @@ def get_CAP_TYPE_TEST(row, capacity_and_FTE_outputs):
             # if yes, check if there is month matching data
             if index in avg_df.index and avg_df[index] > 0:
 
-                selected_average = avg_df[index]
                 return str(index)
 
             # if not, checks if matching year
@@ -294,7 +293,6 @@ def get_CAP_TYPE_TEST(row, capacity_and_FTE_outputs):
                 and avg_df.loc[param_with_year].mean() > 0
             ):
 
-                selected_average = avg_df.loc[param_with_year].mean()
                 return str(param_with_year)
             
             # if not, checks if previous year
@@ -303,14 +301,15 @@ def get_CAP_TYPE_TEST(row, capacity_and_FTE_outputs):
                 and avg_df.loc[param_previous_year].mean() > 0
             ):
 
-                selected_average = avg_df.loc[param_previous_year].mean()
+
                 return str(param_previous_year) 
 
             # if not, uses all years average
             elif (avg_df.loc[tupple_param].mean() >0 ):
-                selected_average = avg_df.loc[tupple_param].mean()
+
                 return (str(tupple_param) +' MEAN')
-            
+    #if all else fails, returns a global average
+    return ("GLOBAL AVERAGE")            
 
 
 
@@ -334,8 +333,6 @@ def get_CAP_map_TEST(row, capacity_and_FTE_outputs):
     ]
 
     row_year = row["Emission Year"]
-    row_month = row["Emission Month"]
-    row_rate = row["rate"]
 
     row_facility = [row["Facility Name"]]
     row_BU_and_type = [row["BU Name"], row["Type"]]
@@ -369,11 +366,21 @@ def get_CAP_map_TEST(row, capacity_and_FTE_outputs):
 
     list_of_params = [row_facility, row_BU_and_type, row_type, row_BU]
 
-    # determines wether to use FTE or capacity avgs tables
+    # determines wether to use FTE or capacity avgs tables and gets apropriate global average
     if row["consumption_rate_type"] == "FTE":
         FTE_or_capacity_avgs = FTE_averages
+
+        unindex=FTE_averages[0].reset_index()
+
+        global_average=unindex.loc[:,'FTE'].mean()
     else:
         FTE_or_capacity_avgs = capacity_averages
+
+        unindex=capacity_averages[0].reset_index()
+
+        global_average=unindex.loc[:,'Capacity (m2)'].mean()
+
+
 
     for param, index, avg_df in zip(
         list_of_params, list_of_indexes, FTE_or_capacity_avgs
@@ -415,10 +422,12 @@ def get_CAP_map_TEST(row, capacity_and_FTE_outputs):
                 return selected_average
             
 
+    return (global_average)
+
 
 
 # TODO: TEST FUNCTION, REMOVE
-def get_rate_map_TEST(row, rates_outputs):
+def get_rate_map_TEST(row, rates_outputs,custom_rate_selected):
 
     # use necesary df from other modules
     facility_rates_df = rates_outputs[1]
@@ -435,98 +444,102 @@ def get_rate_map_TEST(row, rates_outputs):
     # this value is used to check if this specific combination of facility, year, and month exists in the FTE  and capacity dfs
     row_index_combined = (row_BU, row_type)
 
-    if row_name in facility_rates_df.index and (facility_rates_df[row_name].mean()) > 0:
 
-        # check if there is data for current year
-        if (row_name, row_year) in facility_rates_df.index and facility_rates_df.loc[
-            (row_name, row_year)
-        ].mean() > 0:
+    if custom_rate_selected==False:
+        if row_name in facility_rates_df.index and (facility_rates_df[row_name].mean()) > 0:
 
-            return str(row_name) + "->" + str(row_year)
+            # check if there is data for current year
+            if (row_name, row_year) in facility_rates_df.index and facility_rates_df.loc[
+                (row_name, row_year)
+            ].mean() > 0:
 
-        # check if there is data for previous year
+                return str(row_name) + "->" + str(row_year)
+
+            # check if there is data for previous year
+            elif (
+                row_name,
+                (row_year - 1),
+            ) in facility_rates_df.index and facility_rates_df.loc[
+                (row_name, (row_year - 1))
+            ].mean() > 0:
+                return str(row_name) + "->" + str(row_year - 1)
+
+            # if none of the above, use average across years
+            elif row_name in facility_rates_df.index:
+                return str(row_name) + "-> years average"
+
+        # check match for BU and type, and checks if average would be 0
         elif (
-            row_name,
-            (row_year - 1),
-        ) in facility_rates_df.index and facility_rates_df.loc[
-            (row_name, (row_year - 1))
-        ].mean() > 0:
-            return str(row_name) + "->" + str(row_year - 1)
+            row_index_combined in BU_and_type_df.index
+            and (BU_and_type_df[row_index_combined].mean()) > 0
+        ):
 
-        # if none of the above, use average across years
-        elif row_name in facility_rates_df.index:
-            return str(row_name) + "-> years average"
+            # check if there is data for current year
+            if (row_BU, row_type, row_year) in BU_and_type_df.index and BU_and_type_df.loc[
+                (row_BU, row_type, row_year)
+            ].mean() > 0:
+                return str(row_BU) + "->" + str(row_type) + "->" + str(row_year)
 
-    # check match for BU and type, and checks if average would be 0
-    elif (
-        row_index_combined in BU_and_type_df.index
-        and (BU_and_type_df[row_index_combined].mean()) > 0
-    ):
+            # check if there is data for previous year
+            elif (
+                row_BU,
+                row_type,
+                (row_year - 1),
+            ) in BU_and_type_df.index and BU_and_type_df.loc[
+                (row_BU, row_type, (row_year - 1))
+            ].mean() > 0:
+                return str(row_BU) + "->" + str(row_type) + "->" + str(row_year - 1)
 
-        # check if there is data for current year
-        if (row_BU, row_type, row_year) in BU_and_type_df.index and BU_and_type_df.loc[
-            (row_BU, row_type, row_year)
-        ].mean() > 0:
-            return str(row_BU) + "->" + str(row_type) + "->" + str(row_year)
+            # if none of the above, use average across years
+            elif row_index_combined in BU_and_type_df.index:
+                return str(row_BU) + "->" + str(row_type) + "-> all years average"
 
-        # check if there is data for previous year
-        elif (
-            row_BU,
-            row_type,
-            (row_year - 1),
-        ) in BU_and_type_df.index and BU_and_type_df.loc[
-            (row_BU, row_type, (row_year - 1))
-        ].mean() > 0:
-            return str(row_BU) + "->" + str(row_type) + "->" + str(row_year - 1)
+        # do the same checks on type DF
+        elif row_type in type_df.index and type_df[row_type].mean() > 0:
 
-        # if none of the above, use average across years
-        elif row_index_combined in BU_and_type_df.index:
-            return str(row_BU) + "->" + str(row_type) + "-> all years average"
+            if (row_type, row_year) in type_df.index and type_df.loc[
+                (row_type, row_year)
+            ].mean() > 0:
+                return str(row_type) + "->" + str(row_year)
 
-    # do the same checks on type DF
-    elif row_type in type_df.index and type_df[row_type].mean() > 0:
+            elif (row_type, (row_year - 1)) in type_df.index and type_df.loc[
+                (row_type, (row_year - 1))
+            ].mean() > 0:
+                return str(row_type) + "->" + str(row_year - 1)
+            else:
+                return str(row_type) + "-> all years average"
 
-        if (row_type, row_year) in type_df.index and type_df.loc[
-            (row_type, row_year)
-        ].mean() > 0:
-            return str(row_type) + "->" + str(row_year)
+        # do the same checks on BU df
+        elif row_BU in BU_df.index:
 
-        elif (row_type, (row_year - 1)) in type_df.index and type_df.loc[
-            (row_type, (row_year - 1))
-        ].mean() > 0:
-            return str(row_type) + "->" + str(row_year - 1)
+            if (row_BU, row_year) in BU_df.index and BU_df.loc[
+                (row_BU, row_year)
+            ].mean() > 0:
+                return str(row_BU) + "->" + str(row_year)
+
+            elif (row_BU, (row_year - 1)) in BU_df.index and BU_df.loc[
+                (row_BU, (row_year - 1))
+            ].mean() > 0:
+                return str(row_BU) + "->" + str(row_year - 1)
+
+            else:
+                return str(row_BU) + "-> all years average"
+
+        # return activity averages
         else:
-            return str(row_type) + "-> all years average"
+            if row_year in activity_df.index and activity_df[row_year].mean() > 0:
 
-    # do the same checks on BU df
-    elif row_BU in BU_df.index:
+                return str(row["Sub Activity"]) + "->" + str(row_year)
 
-        if (row_BU, row_year) in BU_df.index and BU_df.loc[
-            (row_BU, row_year)
-        ].mean() > 0:
-            return str(row_BU) + "->" + str(row_year)
+            if (row_year - 1) in activity_df.index and activity_df[
+                (row_year - 1)
+            ].mean() > 0:
+                return str(row["Sub Activity"]) + "->" + str(row_year - 1)
 
-        elif (row_BU, (row_year - 1)) in BU_df.index and BU_df.loc[
-            (row_BU, (row_year - 1))
-        ].mean() > 0:
-            return str(row_BU) + "->" + str(row_year - 1)
-
-        else:
-            return str(row_BU) + "-> all years average"
-
-    # return activity averages
+            else:
+                return str(row["Sub Activity"]) + "-> all years average"
     else:
-        if row_year in activity_df.index and activity_df[row_year].mean() > 0:
-
-            return str(row["Sub Activity"]) + "->" + str(row_year)
-
-        if (row_year - 1) in activity_df.index and activity_df[
-            (row_year - 1)
-        ].mean() > 0:
-            return str(row["Sub Activity"]) + "->" + str(row_year - 1)
-
-        else:
-            return str(row["Sub Activity"]) + "-> all years average"
+        return("CUSTOM RATE")
 
 
 # gets the apropriate rate, based on original hirearachy
@@ -673,11 +686,20 @@ def get_estimation(row, capacity_and_FTE_outputs):
 
     list_of_params = [row_facility, row_BU_and_type, row_type, row_BU]
 
-    # determines wether to use FTE or capacity avgs tables
+    # determines wether to use FTE or capacity avgs tables, and gets global average
     if row["consumption_rate_type"] == "FTE":
         FTE_or_capacity_avgs = FTE_averages
+
+        unindex=FTE_averages[0].reset_index()
+
+        global_average=unindex.loc[:,'FTE'].mean()
+
     else:
         FTE_or_capacity_avgs = capacity_averages
+
+        unindex=capacity_averages[0].reset_index()
+
+        global_average=unindex.loc[:,'Capacity (m2)'].mean()
 
     for param, index, avg_df in zip(
         list_of_params, list_of_indexes, FTE_or_capacity_avgs
@@ -717,3 +739,6 @@ def get_estimation(row, capacity_and_FTE_outputs):
             elif (avg_df.loc[tupple_param].mean() >0 ):
                 selected_average = avg_df.loc[tupple_param].mean()
                 return selected_average * row_rate * monthly_operation_percentage
+            
+    #if all else fails, returns a global average
+    return (global_average * row_rate * monthly_operation_percentage)    
